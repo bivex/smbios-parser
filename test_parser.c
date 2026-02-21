@@ -13,6 +13,22 @@
 #define FAIL(msg) do { fprintf(stderr, "FAIL: %s\n", msg); exit(1); } while(0)
 #define CHECK(cond, msg) do { if (!(cond)) FAIL(msg); } while(0)
 
+/* Platform detection at runtime */
+static const char* platform_name(void)
+{
+#if defined(SMBIOS_WINDOWS)
+    return "Windows";
+#elif defined(SMBIOS_MACOS)
+    return "macOS";
+#elif defined(SMBIOS_LINUX)
+    return "Linux";
+#elif defined(SMBIOS_BSD)
+    return "BSD";
+#else
+    return "Unknown";
+#endif
+}
+
 /*
  * Build a minimal SMBIOS 2.0 binary in-memory:
  *   [0..31]  - 2.x entry point (32 bytes)
@@ -95,7 +111,8 @@ int main(void)
     uint8_t buf[512];
     size_t size = build_smbios(buf, sizeof(buf));
 
-    printf("=== smbios-parser unit tests ===\n\n");
+    printf("=== smbios-parser unit tests ===\n");
+    printf("Platform: %s\n\n", platform_name());
 
     /* --- Test 1: initialize with valid data --- */
     struct ParserContext ctx;

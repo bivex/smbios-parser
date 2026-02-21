@@ -23,9 +23,24 @@
 #include <stdint.h>
 #include <string.h>
 
+/* Platform detection */
 #if defined(WIN32) || defined(_WIN32) || defined(WINNT) || defined(_WINNT) || defined(WIN64) || defined(_WIN64)
-	#undef SMBIOS_WINDOWS
+	#ifndef SMBIOS_WINDOWS
 	#define SMBIOS_WINDOWS   1
+	#endif
+#elif defined(__APPLE__)
+	#include <TargetConditionals.h>
+	#ifndef SMBIOS_MACOS
+	#define SMBIOS_MACOS     1
+	#endif
+#elif defined(__linux__)
+	#ifndef SMBIOS_LINUX
+	#define SMBIOS_LINUX     1
+	#endif
+#elif defined(__FreeBSD__) || defined(__NetBSD__) || defined(__OpenBSD__) || defined(__DragonFly__)
+	#ifndef SMBIOS_BSD
+	#define SMBIOS_BSD       1
+	#endif
 #endif
 
 #undef SMBIOS_EXPORT
@@ -496,8 +511,16 @@ SMBIOS_EXPORT const char *smbios_get_string( const struct Entry *entry, int inde
 } // extern "C"
 #endif
 
+/*
+ * Platform-specific includes and helpers
+ */
+#ifdef SMBIOS_MACOS
+#include "macos_hardware.h"  /* macOS hardware info via IOKit */
+#endif
+
+/* Cleanup internal macros */
 #undef SMBIOS_STRING
-#undef SMBIOS_WINDOWS
 #undef SMBIOS_EXPORT
 
+/* Platform defines remain available for library users */
 

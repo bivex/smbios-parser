@@ -50,7 +50,7 @@ typedef struct {
  * @param info  Output structure to fill
  * @return 0 on success, -1 on error
  */
-int hw_info_get(hw_info_t *info);
+int32_t hw_info_get(hw_info_t *info);
 
 /**
  * Get a single string property from IOPlatformExpertDevice
@@ -60,7 +60,7 @@ int hw_info_get(hw_info_t *info);
  * @param size  Buffer size
  * @return 0 on success, -1 on error
  */
-int hw_info_get_string(CFStringRef key, char *out, size_t size);
+int32_t hw_info_get_string(CFStringRef key, char *out, size_t size);
 
 /**
  * Convert CFString to C string (UTF-8)
@@ -70,7 +70,7 @@ int hw_info_get_string(CFStringRef key, char *out, size_t size);
  * @param size  Buffer size
  * @return 0 on success, -1 on error
  */
-int cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size);
+int32_t cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size);
 
 #ifdef __cplusplus
 }

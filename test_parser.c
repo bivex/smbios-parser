@@ -116,12 +116,12 @@ int main(void)
 
     /* --- Test 1: initialize with valid data --- */
     struct ParserContext ctx;
-    int ret = smbios_initialize(&ctx, buf, size, SMBIOS_2_0);
+    int32_t ret = smbios_initialize(&ctx, buf, size, SMBIOS_2_0);
     CHECK(ret == SMBERR_OK, "smbios_initialize with valid 2.0 data");
     PASS("smbios_initialize (valid data)");
 
     /* --- Test 2: version reporting --- */
-    int selected = 0, original = 0;
+    int32_t selected = 0, original = 0;
     ret = smbios_get_version(&ctx, &selected, &original);
     CHECK(ret == SMBERR_OK, "smbios_get_version returned error");
     CHECK(original == SMBIOS_2_0, "original version should be 2.0");

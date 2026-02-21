@@ -61,10 +61,10 @@
 #define SMBIOS_CONSTEXPR const
 #endif
 
-static SMBIOS_CONSTEXPR int SMBERR_OK = 0;
-static SMBIOS_CONSTEXPR int SMBERR_INVALID_ARGUMENT = -1;
-static SMBIOS_CONSTEXPR int SMBERR_INVALID_DATA = -2;
-static SMBIOS_CONSTEXPR int SMBERR_END_OF_STREAM = -3;
+static SMBIOS_CONSTEXPR int32_t SMBERR_OK = 0;
+static SMBIOS_CONSTEXPR int32_t SMBERR_INVALID_ARGUMENT = -1;
+static SMBIOS_CONSTEXPR int32_t SMBERR_INVALID_DATA = -2;
+static SMBIOS_CONSTEXPR int32_t SMBERR_END_OF_STREAM = -3;
 
 enum EntryType
 {
@@ -394,7 +394,7 @@ struct Entry
 	const char *strings;
 
 	// Number of strings in the string table.
-	int string_count;
+	int32_t string_count;
 };
 
 enum SpecVersion
@@ -425,9 +425,9 @@ struct ParserContext
 	// Pointer to one byte past the last byte of the entry
 	const uint8_t *eend;
 	// Selected SMBIOS version
-	int sversion;
+	int32_t sversion;
 	// Original SMBIOS version
-	int oversion;
+	int32_t oversion;
 	// Content of the current SMBIOS entry
 	struct Entry entry;
 	// true if parsing failed (cannot be reset)
@@ -452,7 +452,7 @@ extern "C" {
  * @param version Preferred SMBIOS version.
  * @return SMBERR_OK on success or a negative error code.
  */
-SMBIOS_EXPORT int smbios_initialize(struct ParserContext *context, const uint8_t *data, size_t size, int version );
+SMBIOS_EXPORT int32_t smbios_initialize(struct ParserContext *context, const uint8_t *data, size_t size, int32_t version );
 
 /**
  * Get the next SMBIOS entry.
@@ -463,7 +463,7 @@ SMBIOS_EXPORT int smbios_initialize(struct ParserContext *context, const uint8_t
  * @param entry Pointer to the entry.
  * @return SMBERR_OK on success or a negative error code.
  */
-SMBIOS_EXPORT int smbios_next(struct ParserContext *context, const struct Entry **entry);
+SMBIOS_EXPORT int32_t smbios_next(struct ParserContext *context, const struct Entry **entry);
 
 /**
  * Reset the SMBIOS parser and let it start from the beginning.
@@ -473,7 +473,7 @@ SMBIOS_EXPORT int smbios_next(struct ParserContext *context, const struct Entry 
  * @param context Parser context.
  * @return SMBERR_OK on success or a negative error code.
  */
-SMBIOS_EXPORT int smbios_reset(struct ParserContext * context);
+SMBIOS_EXPORT int32_t smbios_reset(struct ParserContext * context);
 
 /**
  * Returns the selected and/or the original SMBIOS versions.
@@ -483,7 +483,7 @@ SMBIOS_EXPORT int smbios_reset(struct ParserContext * context);
  * @param original (optional) Version of the SMBIOS data.
  * @return SMBERR_OK on success or a negative error code.
  */
-SMBIOS_EXPORT int smbios_get_version(struct ParserContext *context, int *selected, int *original);
+SMBIOS_EXPORT int32_t smbios_get_version(struct ParserContext *context, int32_t *selected, int32_t *original);
 
 /**
  * Returns a string from the SMBIOS entry.
@@ -505,7 +505,7 @@ SMBIOS_EXPORT int smbios_get_version(struct ParserContext *context, int *selecte
  * @param index Index of the string, starting from 1.
  * @return String associated with the given index or NULL in case of error.
  */
-SMBIOS_EXPORT const char *smbios_get_string( const struct Entry *entry, int index );
+SMBIOS_EXPORT const char *smbios_get_string( const struct Entry *entry, int32_t index );
 
 #ifdef __cplusplus
 } // extern "C"

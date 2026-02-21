@@ -38,7 +38,7 @@ struct RawSMBIOSData
 };
 #endif
 
-int smbios_initialize(struct ParserContext *context, const uint8_t *data, size_t size, int version )
+int32_t smbios_initialize(struct ParserContext *context, const uint8_t *data, size_t size, int32_t version )
 {
     // we need at least the smbios header for now
     if (size < SMBIOS_HEADER_SIZE)
@@ -108,13 +108,13 @@ int smbios_initialize(struct ParserContext *context, const uint8_t *data, size_t
     return SMBERR_OK;
 }
 
-const char *smbios_get_string( const struct Entry *entry, int index )
+const char *smbios_get_string( const struct Entry *entry, int32_t index )
 {
     if (entry == NULL || index <= 0 || index > entry->string_count)
         return NULL;
 
     const char *ptr = entry->strings;
-    for (int i = 1; *ptr != 0 && i < index; ++i)
+    for (int32_t i =1; *ptr != 0 && i < index; ++i)
     {
         while (*ptr != 0) ++ptr;
         ++ptr;
@@ -127,7 +127,7 @@ static const char *get_string( struct ParserContext *context, int index )
     return smbios_get_string(&context->entry, index);
 }
 
-int smbios_reset( struct ParserContext *context )
+int32_t smbios_reset( struct ParserContext *context )
 {
     if (context == NULL)
         return SMBERR_INVALID_ARGUMENT;
@@ -177,7 +177,7 @@ static uint32_t read_uint32(struct ParserContext *context)
     }
 
     uint32_t value = 0;
-    for (int i = 0; i < 4; ++i)
+    for (int32_t i =0; i < 4; ++i)
     {
         #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         uint32_t v = (uint32_t)(context->ptr[i] << (i * 8));
@@ -199,7 +199,7 @@ static uint64_t read_uint64(struct ParserContext *context)
     }
 
     uint64_t value = 0;
-    for (int i = 0; i < 8; ++i)
+    for (int32_t i =0; i < 8; ++i)
     {
         #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
         uint64_t v = (uint64_t)(context->ptr[i] << (i * 8));
@@ -703,7 +703,7 @@ static int parse_entry(struct ParserContext *context, const struct Entry **entry
     return SMBERR_OK;
 }
 
-int smbios_next(struct ParserContext *context, const struct Entry **entry)
+int32_t smbios_next(struct ParserContext *context, const struct Entry **entry)
 {
     if (context == NULL || entry == NULL)
         return SMBERR_INVALID_ARGUMENT;
@@ -731,7 +731,7 @@ int smbios_next(struct ParserContext *context, const struct Entry **entry)
 
     // compute the end of the entry skipping all strings
     context->eend = (uint8_t*) context->entry.strings;
-    int nulls = 0;
+    int32_t nulls = 0;
     while (context->eend < context->data + context->size)
     {
         if (*context->eend++ != 0)
@@ -755,7 +755,7 @@ int smbios_next(struct ParserContext *context, const struct Entry **entry)
     return parse_entry(context, entry);
 }
 
-int smbios_get_version(struct ParserContext *context, int *selected, int *original)
+int32_t smbios_get_version(struct ParserContext *context, int32_t *selected, int32_t *original)
 {
     if (context == NULL)
         return SMBERR_INVALID_ARGUMENT;

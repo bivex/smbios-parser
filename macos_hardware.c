@@ -21,7 +21,7 @@
 #include <string.h>
 #include <IOKit/IOKitLib.h>
 
-int cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size)
+int32_t cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size)
 {
     if (cfstr == NULL || out == NULL || size == 0)
         return -1;
@@ -40,12 +40,12 @@ int cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size)
     return 0;
 }
 
-int hw_info_get_string(CFStringRef key, char *out, size_t size)
+int32_t hw_info_get_string(CFStringRef key, char *out, size_t size)
 {
     CFMutableDictionaryRef matching;
     io_service_t service;
     CFTypeRef property;
-    int ret = -1;
+    int32_t ret = -1;
 
     if (out == NULL || size == 0)
         return -1;
@@ -83,7 +83,7 @@ int hw_info_get_string(CFStringRef key, char *out, size_t size)
     return ret;
 }
 
-int hw_info_get(hw_info_t *info)
+int32_t hw_info_get(hw_info_t *info)
 {
     if (info == NULL)
         return -1;

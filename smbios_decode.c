@@ -148,7 +148,7 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
     fprintf(output, "  SMBIOS version: %d.%d\n", oversion >> 8, oversion & 0xFF);
 
     const struct Entry *entry = NULL;
-    int result = 0;
+    int32_t result = 0;
     while (true)
     {
         result = smbios_next(parser, &entry);

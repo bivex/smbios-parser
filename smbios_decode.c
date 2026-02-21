@@ -313,7 +313,7 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
                 fprintf(output, "\tUse: %d\n", (int) entry->data.physical_memory_array.Use);
                 fprintf(output, "\tNumberDevices: %d\n", entry->data.physical_memory_array.NumberDevices);
                 fprintf(output, "\tMaximumCapacity: %d KiB\n", entry->data.physical_memory_array.MaximumCapacity);
-                fprintf(output, "\tExtMaximumCapacity: %ld KiB\n", entry->data.physical_memory_array.ExtendedMaximumCapacity);
+                fprintf(output, "\tExtMaximumCapacity: %lluu KiB\n", entry->data.physical_memory_array.ExtendedMaximumCapacity);
             }
             fputs("\n", output);
         }
@@ -378,8 +378,8 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
             }
             if (sversion >= SMBIOS_2_7)
             {
-                fprintf(output, "\tExtendedStartingAddress: %lX\n", entry->data.memory_array_mapped_address.ExtendedStartingAddress);
-                fprintf(output, "\tExtendedEndingAddress: %lX\n", entry->data.memory_array_mapped_address.ExtendedEndingAddress);
+                fprintf(output, "\tExtendedStartingAddress: %llXX\n", entry->data.memory_array_mapped_address.ExtendedStartingAddress);
+                fprintf(output, "\tExtendedEndingAddress: %llXX\n", entry->data.memory_array_mapped_address.ExtendedEndingAddress);
             }
             fputs("\n", output);
         }
@@ -398,8 +398,8 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
             }
             if (sversion >= SMBIOS_2_7)
             {
-                fprintf(output, "\tExtendedStartingAddress: %ld\n", entry->data.memory_device_mapped_address.ExtendedStartingAddress);
-                fprintf(output, "\tExtendedEndingAddress: %ld\n", entry->data.memory_device_mapped_address.ExtendedEndingAddress);
+                fprintf(output, "\tExtendedStartingAddress: %lluu\n", entry->data.memory_device_mapped_address.ExtendedStartingAddress);
+                fprintf(output, "\tExtendedEndingAddress: %lluu\n", entry->data.memory_device_mapped_address.ExtendedEndingAddress);
             }
             fputs("\n", output);
         }

@@ -462,7 +462,7 @@ SMBIOS_EXPORT int32_t smbios_reset(struct ParserContext *context);
  * @param original (optional) Version of the SMBIOS data.
  * @return SMBERR_OK on success or a negative error code.
  */
-SMBIOS_EXPORT int32_t smbios_get_version(struct ParserContext *context, int32_t *selected, int32_t *original);
+SMBIOS_EXPORT int32_t smbios_get_version(const struct ParserContext *context, int32_t *selected, int32_t *original);
 
 /**
  * Returns a string from the SMBIOS entry.

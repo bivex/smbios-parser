@@ -114,7 +114,7 @@ const char *smbios_get_string(const struct Entry *entry, int32_t index) {
     return ptr;
 }
 
-static const char *get_string(struct ParserContext *context, int index) {
+static const char *get_string(const struct ParserContext *context, int index) {
     return smbios_get_string(&context->entry, index);
 }
 
@@ -705,7 +705,7 @@ int32_t smbios_next(struct ParserContext *context, const struct Entry **entry) {
     return parse_entry(context, entry);
 }
 
-int32_t smbios_get_version(struct ParserContext *context, int32_t *selected, int32_t *original) {
+int32_t smbios_get_version(const struct ParserContext *context, int32_t *selected, int32_t *original) {
     if (context == NULL)
         return SMBERR_INVALID_ARGUMENT;
     if (context->data == NULL || context->failed)

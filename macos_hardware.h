@@ -31,7 +31,7 @@ extern "C" {
 #endif
 
 /* Maximum string lengths */
-#define HW_INFO_STR_MAX 256
+enum { HW_INFO_STR_MAX = 256 };
 
 /* Hardware info structure */
 typedef struct {

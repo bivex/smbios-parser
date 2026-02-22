@@ -126,7 +126,7 @@ static size_t build_smbios(uint8_t *buf, size_t cap) {
 
 int main(void) {
     uint8_t buf[512];
-    size_t size = build_smbios(buf, sizeof(buf));
+    const size_t size = build_smbios(buf, sizeof(buf));
 
     printf("=== smbios-parser unit tests ===\n");
     printf("Platform: %s\n\n", platform_name());

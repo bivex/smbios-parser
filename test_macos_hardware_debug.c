@@ -7,10 +7,10 @@
 #include <IOKit/IOKitLib.h>
 
 static void print_property(io_service_t service, const char *key_name) {
-    CFStringRef key = CFStringCreateWithCString(NULL, key_name, kCFStringEncodingUTF8);
+    const CFStringRef key = CFStringCreateWithCString(NULL, key_name, kCFStringEncodingUTF8);
     if (!key) return;
 
-    CFTypeRef prop = IORegistryEntryCreateCFProperty(service, key, kCFAllocatorDefault, 0);
+    const CFTypeRef prop = IORegistryEntryCreateCFProperty(service, key, kCFAllocatorDefault, 0);
     CFRelease(key);
 
     if (!prop) {
@@ -28,8 +28,8 @@ static void print_property(io_service_t service, const char *key_name) {
             printf("<cfstring conversion error>\n");
         }
     } else if (CFGetTypeID(prop) == CFDataGetTypeID()) {
-        CFDataRef data = (CFDataRef) prop;
-        CFIndex len = CFDataGetLength(data);
+        const CFDataRef data = (CFDataRef) prop;
+        const CFIndex len = CFDataGetLength(data);
         const UInt8 *bytes = CFDataGetBytePtr(data);
         printf("[CFData len=%ld] ", len);
         for (CFIndex i = 0; i < len && i < 64; i++) {

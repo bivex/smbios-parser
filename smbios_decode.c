@@ -90,7 +90,7 @@ static bool read_from_file(const char *filename, uint8_t **buffer, size_t *size)
 
     // Get file size
     fseek(input, 0, SEEK_END);
-    long file_size = ftell(input);
+    const long file_size = ftell(input);
     if (file_size < 0) {
         fclose(input);
         return false;
@@ -104,7 +104,7 @@ static bool read_from_file(const char *filename, uint8_t **buffer, size_t *size)
         return false;
     }
 
-    size_t bytes_read = fread(*buffer, 1, *size, input);
+    const size_t bytes_read = fread(*buffer, 1, *size, input);
     fclose(input);
 
     if (bytes_read != *size) {

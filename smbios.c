@@ -142,13 +142,13 @@ static uint16_t read_uint16(struct ParserContext *context) {
     }
 
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-    uint16_t low = (uint16_t) context->ptr[0];
-    uint16_t high = (uint16_t)(context->ptr[1] << 8);
+    const uint16_t low = (uint16_t) context->ptr[0];
+    const uint16_t high = (uint16_t)(context->ptr[1] << 8);
 #else
     uint16_t low = (uint16_t) context->ptr[1];
     uint16_t high = (uint16_t)(context->ptr[0] << 8);
 #endif
-    uint16_t value = high | low;
+    const uint16_t value = high | low;
 
     context->ptr += 2;
     return value;
@@ -163,7 +163,7 @@ static uint32_t read_uint32(struct ParserContext *context) {
     uint32_t value = 0;
     for (int32_t i = 0; i < 4; ++i) {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        uint32_t v = (uint32_t)(context->ptr[i] << (i * 8));
+        const uint32_t v = (uint32_t)(context->ptr[i] << (i * 8));
 #else
         uint32_t v = (uint32_t)(context->ptr[i] << ((3 - i) * 8));
 #endif
@@ -182,7 +182,7 @@ static uint64_t read_uint64(struct ParserContext *context) {
     uint64_t value = 0;
     for (int32_t i = 0; i < 8; ++i) {
 #if __BYTE_ORDER__ == __ORDER_LITTLE_ENDIAN__
-        uint64_t v = (uint64_t)(context->ptr[i] << (i * 8));
+        const uint64_t v = (uint64_t)(context->ptr[i] << (i * 8));
 #else
         uint64_t v = (uint64_t)(context->ptr[i] << ((7 - i) * 8));
 #endif

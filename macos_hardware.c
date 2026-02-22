@@ -26,8 +26,8 @@ int32_t cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size) {
         return -1;
 
     /* Get UTF8 string length */
-    CFIndex len = CFStringGetLength(cfstr);
-    CFIndex max_bytes = CFStringGetMaximumSizeForEncoding(len, kCFStringEncodingUTF8);
+    const CFIndex len = CFStringGetLength(cfstr);
+    const CFIndex max_bytes = CFStringGetMaximumSizeForEncoding(len, kCFStringEncodingUTF8);
 
     if (max_bytes >= (CFIndex) size)
         return -1; /* Buffer too small */
@@ -66,7 +66,7 @@ int32_t hw_info_get_string(CFStringRef key, char *out, size_t size) {
             ret = cfstring_to_cstr((CFStringRef) property, out, size);
         } else if (CFGetTypeID(property) == CFDataGetTypeID()) {
             /* Some properties return CFData (e.g. serial-number) */
-            CFDataRef data = (CFDataRef) property;
+            const CFDataRef data = (CFDataRef) property;
             CFIndex len = CFDataGetLength(data);
             if (len > 0 && len < (CFIndex)(size - 1)) {
                 memcpy(out, CFDataGetBytePtr(data), len);

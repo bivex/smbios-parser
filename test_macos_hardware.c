@@ -20,8 +20,7 @@
 #include <stdio.h>
 #include "macos_hardware.h"
 
-int main(void)
-{
+int main(void) {
     hw_info_t info;
 
     printf("=== macOS Hardware Info Test ===\n\n");

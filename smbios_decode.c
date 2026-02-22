@@ -24,21 +24,19 @@
 
 #include <Windows.h>
 
-static bool get_dmi_data( uint8_t **buffer, size_t *size )
-{
-    const BYTE byteSignature[] = { 'B', 'M', 'S', 'R' };
-    const DWORD signature = *((DWORD*)byteSignature);
+static bool get_dmi_data(uint8_t **buffer, size_t *size) {
+    const BYTE byteSignature[] = {'B', 'M', 'S', 'R'};
+    const DWORD signature = *((DWORD *) byteSignature);
 
     // get the size of SMBIOS table
     *size = GetSystemFirmwareTable(signature, 0, NULL, 0);
     if (*size == 0)
         return false;
-    *buffer = (uint8_t*) malloc(*size);
+    *buffer = (uint8_t *) malloc(*size);
     if (*buffer == NULL)
         return false;
     // retrieve the SMBIOS table
-    if (*size != GetSystemFirmwareTable(signature, 0, *buffer, *size))
-    {
+    if (*size != GetSystemFirmwareTable(signature, 0, *buffer, *size)) {
         free(*buffer);
         return false;
     }
@@ -47,8 +45,7 @@ static bool get_dmi_data( uint8_t **buffer, size_t *size )
 
 #else
 
-static bool get_dmi_data( const char *path, uint8_t **buffer, size_t *size )
-{
+static bool get_dmi_data(const char *path, uint8_t **buffer, size_t *size) {
     FILE *input;
     char fileName[128];
 
@@ -58,29 +55,27 @@ static bool get_dmi_data( const char *path, uint8_t **buffer, size_t *size )
     if (stat(fileName, &info) != 0)
         return false;
     *size = (size_t) info.st_size + 32;
-    *buffer = (uint8_t*) malloc(*size);
+    *buffer = (uint8_t *) malloc(*size);
     if (*buffer == NULL)
         return false;
 
     // read SMBIOS structures
     input = fopen(fileName, "rb");
-    if (input == NULL)
-    {
+    if (input == NULL) {
         free(*buffer);
         return false;
     }
-    fread((char*) *buffer + 32, (size_t) info.st_size, 1, input);
+    fread((char *) *buffer + 32, (size_t) info.st_size, 1, input);
     fclose(input);
 
     // read SMBIOS entry point
     snprintf(fileName, sizeof(fileName), "%s/smbios_entry_point", path);
     input = fopen(fileName, "rb");
-    if (input == NULL)
-    {
+    if (input == NULL) {
         free(*buffer);
         return false;
     }
-    fread((char*) *buffer, 32, 1, input);
+    fread((char *) *buffer, 32, 1, input);
     fclose(input);
 
     return true;
@@ -88,8 +83,7 @@ static bool get_dmi_data( const char *path, uint8_t **buffer, size_t *size )
 
 #endif
 
-static bool read_from_file(const char *filename, uint8_t **buffer, size_t *size)
-{
+static bool read_from_file(const char *filename, uint8_t **buffer, size_t *size) {
     FILE *input = fopen(filename, "rb");
     if (input == NULL)
         return false;
@@ -97,17 +91,15 @@ static bool read_from_file(const char *filename, uint8_t **buffer, size_t *size)
     // Get file size
     fseek(input, 0, SEEK_END);
     long file_size = ftell(input);
-    if (file_size < 0)
-    {
+    if (file_size < 0) {
         fclose(input);
         return false;
     }
-    *size = (size_t)file_size;
+    *size = (size_t) file_size;
     fseek(input, 0, SEEK_SET);
 
-    *buffer = (uint8_t*) malloc(*size);
-    if (*buffer == NULL)
-    {
+    *buffer = (uint8_t *) malloc(*size);
+    if (*buffer == NULL) {
         fclose(input);
         return false;
     }
@@ -115,8 +107,7 @@ static bool read_from_file(const char *filename, uint8_t **buffer, size_t *size)
     size_t bytes_read = fread(*buffer, 1, *size, input);
     fclose(input);
 
-    if (bytes_read != *size)
-    {
+    if (bytes_read != *size) {
         free(*buffer);
         return false;
     }
@@ -124,12 +115,10 @@ static bool read_from_file(const char *filename, uint8_t **buffer, size_t *size)
     return true;
 }
 
-static void hexdump( FILE *output, const uint8_t *buffer, size_t size )
-{
+static void hexdump(FILE *output, const uint8_t *buffer, size_t size) {
     size_t i = 0;
     fputs("\t\t", output);
-    for (; i < size; ++i)
-    {
+    for (; i < size; ++i) {
         if (i > 0 && (i % 16) == 0)
             fputs("\n\t\t", output);
         fprintf(output, "%02X ", (int) buffer[i]);
@@ -138,8 +127,7 @@ static void hexdump( FILE *output, const uint8_t *buffer, size_t size )
         fputs("\n", output);
 }
 
-bool printSMBIOS( struct ParserContext *parser, FILE *output )
-{
+bool printSMBIOS(struct ParserContext *parser, FILE *output) {
     int sversion, oversion;
     if (smbios_get_version(parser, &sversion, &oversion) != SMBERR_OK)
         return false;
@@ -149,62 +137,51 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
 
     const struct Entry *entry = NULL;
     int32_t result = 0;
-    while (true)
-    {
+    while (true) {
         result = smbios_next(parser, &entry);
         if (result != SMBERR_OK)
             break;
 
-        fprintf(output, "Handle 0x%04X, DMI type %d, %d bytes\n", (int) entry->handle, (int) entry->type, (int) entry->length);
+        fprintf(output, "Handle 0x%04X, DMI type %d, %d bytes\n", (int) entry->handle, (int) entry->type,
+                (int) entry->length);
 
-        if (entry->type == TYPE_BIOS_INFO)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        if (entry->type == TYPE_BIOS_INFO) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tVendor: %s\n", entry->data.bios_info.Vendor);
                 fprintf(output, "\tBIOSVersion: %s\n", entry->data.bios_info.BIOSVersion);
                 fprintf(output, "\tBIOSStartingSegment: %X\n", (int) entry->data.bios_info.BIOSStartingAddressSegment);
                 fprintf(output, "\tBIOSReleaseDate: %s\n", entry->data.bios_info.BIOSReleaseDate);
                 fprintf(output, "\tBIOSROMSize: %d KiB\n", ((int) entry->data.bios_info.BIOSROMSize + 1) * 64);
             }
-            if (sversion >= SMBIOS_2_4)
-            {
+            if (sversion >= SMBIOS_2_4) {
                 fprintf(output, "\tSystemBIOSMajorRelease: %d\n", (int) entry->data.bios_info.SystemBIOSMajorRelease);
                 fprintf(output, "\tSystemBIOSMinorRelease: %d\n", (int) entry->data.bios_info.SystemBIOSMinorRelease);
-                fprintf(output, "\tEmbeddedFirmwareMajorRelease: %d\n", (int) entry->data.bios_info.EmbeddedControlerFirmwareMajorRelease);
-                fprintf(output, "\tEmbeddedFirmwareMinorRelease: %d\n", (int) entry->data.bios_info.EmbeddedControlerFirmwareMinorRelease);
+                fprintf(output, "\tEmbeddedFirmwareMajorRelease: %d\n",
+                        (int) entry->data.bios_info.EmbeddedControlerFirmwareMajorRelease);
+                fprintf(output, "\tEmbeddedFirmwareMinorRelease: %d\n",
+                        (int) entry->data.bios_info.EmbeddedControlerFirmwareMinorRelease);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_SYSTEM_INFO)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_SYSTEM_INFO) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tManufacturer: %s\n", entry->data.system_info.Manufacturer);
                 fprintf(output, "\tProductName: %s\n", entry->data.system_info.ProductName);
                 fprintf(output, "\tVersion: %s\n", entry->data.system_info.Version);
                 fprintf(output, "\tSerialNumber: %s\n", entry->data.system_info.SerialNumber);
             }
-            if (sversion >= SMBIOS_2_1)
-            {
+            if (sversion >= SMBIOS_2_1) {
                 fputs("\tUUID:", output);
                 for (int i = 0; i < 16; ++i)
                     fprintf(output, " %02X", entry->data.system_info.UUID[i]);
                 fputs("\n", output);
             }
-            if (sversion >= SMBIOS_2_4)
-            {
+            if (sversion >= SMBIOS_2_4) {
                 fprintf(output, "\tSKUNumber: %s\n", entry->data.system_info.SKUNumber);
                 fprintf(output, "\tFamily: %s\n", entry->data.system_info.Family);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_BASEBOARD_INFO)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_BASEBOARD_INFO) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tManufacturer: %s\n", entry->data.baseboard_info.Manufacturer);
                 fprintf(output, "\tProduct Name: %s\n", entry->data.baseboard_info.Product);
                 fprintf(output, "\tVersion: %s\n", entry->data.baseboard_info.Version);
@@ -215,33 +192,24 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
                 fprintf(output, "\tType: %d\n", (int) entry->data.baseboard_info.BoardType);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_SYSTEM_ENCLOSURE)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_SYSTEM_ENCLOSURE) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tManufacturer: %s\n", entry->data.system_enclosure.Manufacturer);
                 fprintf(output, "\tVersion: %s\n", entry->data.system_enclosure.Version);
                 fprintf(output, "\tSerialNumber: %s\n", entry->data.system_enclosure.SerialNumber);
                 fprintf(output, "\tAssetTag: %s\n", entry->data.system_enclosure.AssetTag);
             }
-            if (sversion >= SMBIOS_2_3)
-            {
+            if (sversion >= SMBIOS_2_3) {
                 fprintf(output, "\tContainedCount: %d\n", (int) entry->data.system_enclosure.ContainedElementCount);
-                fprintf(output, "\tContainedLength: %d\n", (int) entry->data.system_enclosure.ContainedElementRecordLength);
+                fprintf(output, "\tContainedLength: %d\n",
+                        (int) entry->data.system_enclosure.ContainedElementRecordLength);
             }
-            if (sversion >= SMBIOS_2_7)
-            {
+            if (sversion >= SMBIOS_2_7) {
                 fprintf(output, "\tSKUNumber: %s\n", entry->data.system_enclosure.SKUNumber);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_PROCESSOR_INFO)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_PROCESSOR_INFO) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tSocketDesignation: %s\n", entry->data.processor_info.SocketDesignation);
                 fprintf(output, "\tProcessorType: %d\n", (int) entry->data.processor_info.ProcessorType);
                 fprintf(output, "\tProcessorFamily: %d\n", (int) entry->data.processor_info.ProcessorFamily);
@@ -258,75 +226,57 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
                 fprintf(output, "\tStatus: %d\n", entry->data.processor_info.Status);
                 fprintf(output, "\tProcessorUpgrade: %d\n", entry->data.processor_info.ProcessorUpgrade);
             }
-            if (sversion >= SMBIOS_2_1)
-            {
+            if (sversion >= SMBIOS_2_1) {
                 fprintf(output, "\tL1CacheHandle: %d\n", entry->data.processor_info.L1CacheHandle);
                 fprintf(output, "\tL2CacheHandle: %d\n", entry->data.processor_info.L2CacheHandle);
                 fprintf(output, "\tL3CacheHandle: %d\n", entry->data.processor_info.L3CacheHandle);
             }
-            if (sversion >= SMBIOS_2_3)
-            {
+            if (sversion >= SMBIOS_2_3) {
                 fprintf(output, "\tSerialNumber: %s\n", entry->data.processor_info.SerialNumber);
                 fprintf(output, "\tAssetTagNumber: %s\n", entry->data.processor_info.AssetTagNumber);
                 fprintf(output, "\tPartNumber: %s\n", entry->data.processor_info.PartNumber);
             }
-            if (sversion >= SMBIOS_2_3)
-            {
+            if (sversion >= SMBIOS_2_3) {
                 fprintf(output, "\tSerialNumber: %s\n", entry->data.processor_info.SerialNumber);
                 fprintf(output, "\tAssetTagNumber: %s\n", entry->data.processor_info.AssetTagNumber);
                 fprintf(output, "\tPartNumber: %s\n", entry->data.processor_info.PartNumber);
             }
-            if (sversion >= SMBIOS_2_6)
-            {
+            if (sversion >= SMBIOS_2_6) {
                 fprintf(output, "\tProcessorFamily2: %d\n", entry->data.processor_info.ProcessorFamily2);
             }
-            if (sversion >= SMBIOS_3_0)
-            {
+            if (sversion >= SMBIOS_3_0) {
                 fprintf(output, "\tCoreCount2: %d\n", entry->data.processor_info.CoreCount2);
                 fprintf(output, "\tCoreEnabled2: %d\n", entry->data.processor_info.CoreEnabled2);
                 fprintf(output, "\tThreadCount2: %d\n", entry->data.processor_info.ThreadCount2);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_SYSTEM_SLOT)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_SYSTEM_SLOT) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tSlotDesignation: %s\n", entry->data.system_slot.SlotDesignation);
                 fprintf(output, "\tSlotType: %d\n", (int) entry->data.system_slot.SlotType);
                 fprintf(output, "\tSlotDataBusWidth: %d\n", (int) entry->data.system_slot.SlotDataBusWidth);
                 fprintf(output, "\tSlotID: %d\n", (int) entry->data.system_slot.SlotID);
             }
-            if (sversion >= SMBIOS_2_6)
-            {
+            if (sversion >= SMBIOS_2_6) {
                 fprintf(output, "\tSegmentGroupNumber: %d\n", entry->data.system_slot.SegmentGroupNumber);
                 fprintf(output, "\tBusNumber: %d\n", (int) entry->data.system_slot.BusNumber);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_PHYSICAL_MEMORY_ARRAY)
-        {
-            if (sversion >= SMBIOS_2_1)
-            {
+        } else if (entry->type == TYPE_PHYSICAL_MEMORY_ARRAY) {
+            if (sversion >= SMBIOS_2_1) {
                 fprintf(output, "\tUse: %d\n", (int) entry->data.physical_memory_array.Use);
                 fprintf(output, "\tNumberDevices: %d\n", entry->data.physical_memory_array.NumberDevices);
                 fprintf(output, "\tMaximumCapacity: %d KiB\n", entry->data.physical_memory_array.MaximumCapacity);
-                fprintf(output, "\tExtMaximumCapacity: %lluu KiB\n", entry->data.physical_memory_array.ExtendedMaximumCapacity);
+                fprintf(output, "\tExtMaximumCapacity: %lluu KiB\n",
+                        entry->data.physical_memory_array.ExtendedMaximumCapacity);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_MEMORY_DEVICE)
-        {
-            if (sversion >= SMBIOS_2_1)
-            {
+        } else if (entry->type == TYPE_MEMORY_DEVICE) {
+            if (sversion >= SMBIOS_2_1) {
                 fprintf(output, "\tDeviceLocator: %s\n", entry->data.memory_device.DeviceLocator);
                 fprintf(output, "\tBankLocator: %s\n", entry->data.memory_device.BankLocator);
             }
-            if (sversion >= SMBIOS_2_3)
-            {
+            if (sversion >= SMBIOS_2_3) {
                 fprintf(output, "\tSpeed: %d MHz\n", entry->data.memory_device.Speed);
                 fprintf(output, "\tManufacturer: %s\n", entry->data.memory_device.Manufacturer);
                 fprintf(output, "\tSerialNumber: %s\n", entry->data.memory_device.SerialNumber);
@@ -335,159 +285,141 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
                 fprintf(output, "\tSize: %d MiB\n", entry->data.memory_device.Size);
                 fprintf(output, "\tExtendedSize: %d MiB\n", entry->data.memory_device.ExtendedSize);
             }
-            if (sversion >= SMBIOS_2_7)
-            {
+            if (sversion >= SMBIOS_2_7) {
                 fprintf(output, "\tConfiguredClockSpeed: %d\n", entry->data.memory_device.ConfiguredClockSpeed);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_OEM_STRINGS)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_OEM_STRINGS) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "Count: %d\n", (int) entry->data.oem_strings.Count);
                 fputs("\tStrings:\n", output);
                 for (int i = 0; i < entry->data.oem_strings.Count; ++i)
                     fprintf(output, "\t\t\"%s\"\n", smbios_get_string(entry, i));
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_PORT_CONNECTOR)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
-                fprintf(output, "\tInternalReferenceDesignator: %s\n", entry->data.port_connector.InternalReferenceDesignator);
-                fprintf(output, "\tInternalConnectorType: %d\n", (int) entry->data.port_connector.InternalConnectorType);
-                fprintf(output, "\tExternalReferenceDesignator: %s\n", entry->data.port_connector.ExternalReferenceDesignator);
-                fprintf(output, "\tExternalConnectorType: %d\n", (int) entry->data.port_connector.ExternalConnectorType);
+        } else if (entry->type == TYPE_PORT_CONNECTOR) {
+            if (sversion >= SMBIOS_2_0) {
+                fprintf(output, "\tInternalReferenceDesignator: %s\n",
+                        entry->data.port_connector.InternalReferenceDesignator);
+                fprintf(output, "\tInternalConnectorType: %d\n",
+                        (int) entry->data.port_connector.InternalConnectorType);
+                fprintf(output, "\tExternalReferenceDesignator: %s\n",
+                        entry->data.port_connector.ExternalReferenceDesignator);
+                fprintf(output, "\tExternalConnectorType: %d\n",
+                        (int) entry->data.port_connector.ExternalConnectorType);
                 fprintf(output, "\tPortType: %d\n", (int) entry->data.port_connector.PortType);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_MEMORY_ARRAY_MAPPED_ADDRESS)
-        {
-            if (sversion >= SMBIOS_2_1)
-            {
+        } else if (entry->type == TYPE_MEMORY_ARRAY_MAPPED_ADDRESS) {
+            if (sversion >= SMBIOS_2_1) {
                 fprintf(output, "\tStartingAddress: %0X\n", entry->data.memory_array_mapped_address.StartingAddress);
                 fprintf(output, "\tEndingAddress: %0X\n", entry->data.memory_array_mapped_address.EndingAddress);
-                fprintf(output, "\tMemoryArrayHandle: %0X\n", entry->data.memory_array_mapped_address.MemoryArrayHandle);
-                fprintf(output, "\tPartitionWidth: %0X\n", (int) entry->data.memory_array_mapped_address.PartitionWidth);
+                fprintf(output, "\tMemoryArrayHandle: %0X\n",
+                        entry->data.memory_array_mapped_address.MemoryArrayHandle);
+                fprintf(output, "\tPartitionWidth: %0X\n",
+                        (int) entry->data.memory_array_mapped_address.PartitionWidth);
             }
-            if (sversion >= SMBIOS_2_7)
-            {
-                fprintf(output, "\tExtendedStartingAddress: %llXX\n", entry->data.memory_array_mapped_address.ExtendedStartingAddress);
-                fprintf(output, "\tExtendedEndingAddress: %llXX\n", entry->data.memory_array_mapped_address.ExtendedEndingAddress);
+            if (sversion >= SMBIOS_2_7) {
+                fprintf(output, "\tExtendedStartingAddress: %llXX\n",
+                        entry->data.memory_array_mapped_address.ExtendedStartingAddress);
+                fprintf(output, "\tExtendedEndingAddress: %llXX\n",
+                        entry->data.memory_array_mapped_address.ExtendedEndingAddress);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_MEMORY_DEVICE_MAPPED_ADDRESS)
-        {
-            if (sversion >= SMBIOS_2_1)
-            {
+        } else if (entry->type == TYPE_MEMORY_DEVICE_MAPPED_ADDRESS) {
+            if (sversion >= SMBIOS_2_1) {
                 fprintf(output, "\tStartingAddress: %d\n", entry->data.memory_device_mapped_address.StartingAddress);
                 fprintf(output, "\tEndingAddress: %d\n", entry->data.memory_device_mapped_address.EndingAddress);
-                fprintf(output, "\tMemoryArrayHandle: %d\n", entry->data.memory_device_mapped_address.MemoryDeviceHandle);
-                fprintf(output, "\tMemoryArrayMappedAddressHandle: %d\n", entry->data.memory_device_mapped_address.MemoryArrayMappedAddressHandle);
-                fprintf(output, "\tPartitionRowPosition: %d\n", (int) entry->data.memory_device_mapped_address.PartitionRowPosition);
-                fprintf(output, "\tInterleavePosition: %d\n", (int) entry->data.memory_device_mapped_address.InterleavePosition);
-                fprintf(output, "\tInterleavedDataDepth: %d\n", (int) entry->data.memory_device_mapped_address.InterleavedDataDepth);
+                fprintf(output, "\tMemoryArrayHandle: %d\n",
+                        entry->data.memory_device_mapped_address.MemoryDeviceHandle);
+                fprintf(output, "\tMemoryArrayMappedAddressHandle: %d\n",
+                        entry->data.memory_device_mapped_address.MemoryArrayMappedAddressHandle);
+                fprintf(output, "\tPartitionRowPosition: %d\n",
+                        (int) entry->data.memory_device_mapped_address.PartitionRowPosition);
+                fprintf(output, "\tInterleavePosition: %d\n",
+                        (int) entry->data.memory_device_mapped_address.InterleavePosition);
+                fprintf(output, "\tInterleavedDataDepth: %d\n",
+                        (int) entry->data.memory_device_mapped_address.InterleavedDataDepth);
             }
-            if (sversion >= SMBIOS_2_7)
-            {
-                fprintf(output, "\tExtendedStartingAddress: %lluu\n", entry->data.memory_device_mapped_address.ExtendedStartingAddress);
-                fprintf(output, "\tExtendedEndingAddress: %lluu\n", entry->data.memory_device_mapped_address.ExtendedEndingAddress);
+            if (sversion >= SMBIOS_2_7) {
+                fprintf(output, "\tExtendedStartingAddress: %lluu\n",
+                        entry->data.memory_device_mapped_address.ExtendedStartingAddress);
+                fprintf(output, "\tExtendedEndingAddress: %lluu\n",
+                        entry->data.memory_device_mapped_address.ExtendedEndingAddress);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_MANAGEMENT_DEVICE)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_MANAGEMENT_DEVICE) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tDescription: %s\n", entry->data.management_device.Description);
                 fprintf(output, "\tType: %d\n", (int) entry->data.management_device.Type);
                 fprintf(output, "\tAddress: %d\n", entry->data.management_device.Address);
                 fprintf(output, "\tAddressType: %d\n", (int) entry->data.management_device.AddressType);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_MANAGEMENT_DEVICE_COMPONENT)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_MANAGEMENT_DEVICE_COMPONENT) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tDescription: %s\n", entry->data.management_device_component.Description);
-                fprintf(output, "\tManagementDeviceHandle: %d\n", (int) entry->data.management_device_component.ManagementDeviceHandle);
+                fprintf(output, "\tManagementDeviceHandle: %d\n",
+                        (int) entry->data.management_device_component.ManagementDeviceHandle);
                 fprintf(output, "\tComponentHandle: %d\n", entry->data.management_device_component.ComponentHandle);
-                fprintf(output, "\tThresholdHandle: %d\n", (int) entry->data.management_device_component.ThresholdHandle);
+                fprintf(output, "\tThresholdHandle: %d\n",
+                        (int) entry->data.management_device_component.ThresholdHandle);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_MANAGEMENT_DEVICE_THRESHOLD_DATA)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
-                fprintf(output, "\tLowerThresholdNonCritical: %d\n", entry->data.management_device_threshold_data.LowerThresholdNonCritical);
-                fprintf(output, "\tUpperThresholdNonCritical: %d\n", entry->data.management_device_threshold_data.UpperThresholdNonCritical);
-                fprintf(output, "\tLowerThresholdCritical: %d\n", entry->data.management_device_threshold_data.LowerThresholdCritical);
-                fprintf(output, "\tUpperThresholdCritical: %d\n", entry->data.management_device_threshold_data.UpperThresholdCritical);
-                fprintf(output, "\tLowerThresholdNonRecoverable: %d\n", entry->data.management_device_threshold_data.LowerThresholdNonRecoverable);
-                fprintf(output, "\tUpperThresholdNonRecoverable: %d\n", entry->data.management_device_threshold_data.UpperThresholdNonRecoverable);
+        } else if (entry->type == TYPE_MANAGEMENT_DEVICE_THRESHOLD_DATA) {
+            if (sversion >= SMBIOS_2_0) {
+                fprintf(output, "\tLowerThresholdNonCritical: %d\n",
+                        entry->data.management_device_threshold_data.LowerThresholdNonCritical);
+                fprintf(output, "\tUpperThresholdNonCritical: %d\n",
+                        entry->data.management_device_threshold_data.UpperThresholdNonCritical);
+                fprintf(output, "\tLowerThresholdCritical: %d\n",
+                        entry->data.management_device_threshold_data.LowerThresholdCritical);
+                fprintf(output, "\tUpperThresholdCritical: %d\n",
+                        entry->data.management_device_threshold_data.UpperThresholdCritical);
+                fprintf(output, "\tLowerThresholdNonRecoverable: %d\n",
+                        entry->data.management_device_threshold_data.LowerThresholdNonRecoverable);
+                fprintf(output, "\tUpperThresholdNonRecoverable: %d\n",
+                        entry->data.management_device_threshold_data.UpperThresholdNonRecoverable);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_ONBOARD_DEVICES_EXTENDED_INFO)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
-                fprintf(output, "\tReferenceDesignation: %s\n", entry->data.onboard_devices_extended_info.ReferenceDesignation);
+        } else if (entry->type == TYPE_ONBOARD_DEVICES_EXTENDED_INFO) {
+            if (sversion >= SMBIOS_2_0) {
+                fprintf(output, "\tReferenceDesignation: %s\n",
+                        entry->data.onboard_devices_extended_info.ReferenceDesignation);
                 fprintf(output, "\tDeviceType: %d\n", (int) entry->data.onboard_devices_extended_info.DeviceType);
-                fprintf(output, "\tDeviceTypeInstance: %d\n", (int) entry->data.onboard_devices_extended_info.DeviceTypeInstance);
-                fprintf(output, "\tSegmentGroupNumber: %d\n", entry->data.onboard_devices_extended_info.SegmentGroupNumber);
+                fprintf(output, "\tDeviceTypeInstance: %d\n",
+                        (int) entry->data.onboard_devices_extended_info.DeviceTypeInstance);
+                fprintf(output, "\tSegmentGroupNumber: %d\n",
+                        entry->data.onboard_devices_extended_info.SegmentGroupNumber);
                 fprintf(output, "\tBusNumber: %d\n", (int) entry->data.onboard_devices_extended_info.BusNumber);
-                fprintf(output, "\tDeviceOrFunctionNumber: %d\n", (int) entry->data.onboard_devices_extended_info.DeviceOrFunctionNumber);
+                fprintf(output, "\tDeviceOrFunctionNumber: %d\n",
+                        (int) entry->data.onboard_devices_extended_info.DeviceOrFunctionNumber);
             }
             fputs("\n", output);
-        }
-        else
-        if (entry->type == TYPE_SYSTEM_BOOT_INFO)
-        {
-            if (sversion >= SMBIOS_2_0)
-            {
+        } else if (entry->type == TYPE_SYSTEM_BOOT_INFO) {
+            if (sversion >= SMBIOS_2_0) {
                 fprintf(output, "\tBootStatus:\n\t\t");
-                if ((entry->length - 10) > 0)
-                {
+                if ((entry->length - 10) > 0) {
                     int i = 0;
-                    for (; i < (entry->length - 10); ++i)
-                    {
+                    for (; i < (entry->length - 10); ++i) {
                         if (i > 0 && (i % 16) == 0)
                             fputs("\n\t\t", output);
-                        fprintf(output, "%02X ", (int)entry->data.system_boot_info.BootStatus[i]);
+                        fprintf(output, "%02X ", (int) entry->data.system_boot_info.BootStatus[i]);
                     }
                     if ((i % 16) != 0)
                         fputs("\n", output);
                 }
             }
             fputs("\n", output);
-        }
-        else
-        {
+        } else {
             fputs("\tHeader and data:\n", output);
             if (entry->length > 0)
                 hexdump(output, entry->rawdata, entry->length);
 
             const char *str = entry->strings;
-            if (*str != 0)
-            {
+            if (*str != 0) {
                 fputs("\tStrings:\n", output);
-                while (*str != 0)
-                {
+                while (*str != 0) {
                     fprintf(output, "\t\t\"%s\"\n", str);
                     while (*str != 0) ++str;
                     ++str;
@@ -498,45 +430,39 @@ bool printSMBIOS( struct ParserContext *parser, FILE *output )
         }
     }
 
-    if (result != SMBERR_END_OF_STREAM)
-    {
+    if (result != SMBERR_END_OF_STREAM) {
         fputs("Invalid SMBIOS data", output);
     }
 
     return true;
 }
 
-int main(int argc, char ** argv)
-{
+int main(int argc, char **argv) {
     uint8_t *buffer = NULL;
     size_t size = 0;
     bool result = false;
 
     // Check if a file argument is provided
-    if (argc >= 2)
-    {
+    if (argc >= 2) {
         printf("Reading SMBIOS data from %s\n", argv[1]);
         result = read_from_file(argv[1], &buffer, &size);
-    }
-    else
-    {
-    #ifdef _WIN32
+    } else {
+#ifdef _WIN32
 
-    result = get_dmi_data(&buffer, &size);
+        result = get_dmi_data(&buffer, &size);
 
-    #else
+#else
 
-    const char *path = "/sys/firmware/dmi/tables";
-    if (argc == 2)
-        path = argv[1];
-    printf("Using SMBIOS tables from %s\n", path);
-    result = get_dmi_data(path, &buffer, &size);
+        const char *path = "/sys/firmware/dmi/tables";
+        if (argc == 2)
+            path = argv[1];
+        printf("Using SMBIOS tables from %s\n", path);
+        result = get_dmi_data(path, &buffer, &size);
 
-    #endif
+#endif
     }
 
-    if (!result)
-    {
+    if (!result) {
         fputs("Unable to open SMBIOS tables\n", stderr);
         return 1;
     }

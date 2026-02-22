@@ -1,6 +1,6 @@
 name: C/C++ CI
 
-on: [push]
+on: [ push ]
 
 jobs:
   build:
@@ -8,10 +8,10 @@ jobs:
     runs-on: ubuntu-22.04
 
     steps:
-    - uses: actions/checkout@v1
-    - name: dependencies
-      run: sudo apt-get install cmake make gcc
-    - name: prepare
-      run: cmake .
-    - name: compilation
-      run: make
+      - uses: actions/checkout@v1
+      - name: dependencies
+        run: sudo apt-get install cmake make gcc
+      - name: prepare
+        run: cmake .
+      - name: compilation
+        run: make

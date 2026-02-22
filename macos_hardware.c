@@ -21,8 +21,7 @@
 #include <string.h>
 #include <IOKit/IOKitLib.h>
 
-int32_t cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size)
-{
+int32_t cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size) {
     if (cfstr == NULL || out == NULL || size == 0)
         return -1;
 
@@ -30,7 +29,7 @@ int32_t cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size)
     CFIndex len = CFStringGetLength(cfstr);
     CFIndex max_bytes = CFStringGetMaximumSizeForEncoding(len, kCFStringEncodingUTF8);
 
-    if (max_bytes >= (CFIndex)size)
+    if (max_bytes >= (CFIndex) size)
         return -1; /* Buffer too small */
 
     /* Convert to C string */
@@ -40,8 +39,7 @@ int32_t cfstring_to_cstr(CFStringRef cfstr, char *out, size_t size)
     return 0;
 }
 
-int32_t hw_info_get_string(CFStringRef key, char *out, size_t size)
-{
+int32_t hw_info_get_string(CFStringRef key, char *out, size_t size) {
     CFMutableDictionaryRef matching;
     io_service_t service;
     CFTypeRef property;
@@ -65,10 +63,10 @@ int32_t hw_info_get_string(CFStringRef key, char *out, size_t size)
     property = IORegistryEntryCreateCFProperty(service, key, kCFAllocatorDefault, 0);
     if (property != NULL) {
         if (CFGetTypeID(property) == CFStringGetTypeID()) {
-            ret = cfstring_to_cstr((CFStringRef)property, out, size);
+            ret = cfstring_to_cstr((CFStringRef) property, out, size);
         } else if (CFGetTypeID(property) == CFDataGetTypeID()) {
             /* Some properties return CFData (e.g. serial-number) */
-            CFDataRef data = (CFDataRef)property;
+            CFDataRef data = (CFDataRef) property;
             CFIndex len = CFDataGetLength(data);
             if (len > 0 && len < (CFIndex)(size - 1)) {
                 memcpy(out, CFDataGetBytePtr(data), len);
@@ -83,8 +81,7 @@ int32_t hw_info_get_string(CFStringRef key, char *out, size_t size)
     return ret;
 }
 
-int32_t hw_info_get(hw_info_t *info)
-{
+int32_t hw_info_get(hw_info_t *info) {
     if (info == NULL)
         return -1;
 

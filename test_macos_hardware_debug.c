@@ -6,8 +6,7 @@
 #include <CoreFoundation/CoreFoundation.h>
 #include <IOKit/IOKitLib.h>
 
-static void print_property(io_service_t service, const char *key_name)
-{
+static void print_property(io_service_t service, const char *key_name) {
     CFStringRef key = CFStringCreateWithCString(NULL, key_name, kCFStringEncodingUTF8);
     if (!key) return;
 
@@ -23,13 +22,13 @@ static void print_property(io_service_t service, const char *key_name)
 
     if (CFGetTypeID(prop) == CFStringGetTypeID()) {
         char buf[256];
-        if (CFStringGetCString((CFStringRef)prop, buf, sizeof(buf), kCFStringEncodingUTF8)) {
+        if (CFStringGetCString((CFStringRef) prop, buf, sizeof(buf), kCFStringEncodingUTF8)) {
             printf("%s\n", buf);
         } else {
             printf("<cfstring conversion error>\n");
         }
     } else if (CFGetTypeID(prop) == CFDataGetTypeID()) {
-        CFDataRef data = (CFDataRef)prop;
+        CFDataRef data = (CFDataRef) prop;
         CFIndex len = CFDataGetLength(data);
         const UInt8 *bytes = CFDataGetBytePtr(data);
         printf("[CFData len=%ld] ", len);
@@ -49,8 +48,7 @@ static void print_property(io_service_t service, const char *key_name)
     CFRelease(prop);
 }
 
-int main(void)
-{
+int main(void) {
     CFMutableDictionaryRef matching;
     io_service_t service;
 
